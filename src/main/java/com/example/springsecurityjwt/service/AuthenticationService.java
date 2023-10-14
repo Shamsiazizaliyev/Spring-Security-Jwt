@@ -11,6 +11,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -24,10 +25,12 @@ public class AuthenticationService {
    private final AuthenticationManager authenticationManager;
    
    private final  JwtService jwtService;
+
+   private final PasswordEncoder passwordEncoder;
     public ResponseUser save(RequestUser userDto) {
         
         User user =User.builder().username(userDto.getUsername())
-                .password(userDto.getPassword())
+                .password(passwordEncoder.encode(userDto.getPassword()))
                 .nameSurname(userDto.getNameSurname())
                 .role(Role.USER)
                 .build();
@@ -40,10 +43,10 @@ public class AuthenticationService {
 
     public ResponseUser auth(UserReq userReq) {
 
-
         authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(userReq.getUsername(),userReq.getPassword()));
         User user=userRepostory.findByUsername(userReq.getUsername()).orElseThrow(()->new UsernameNotFoundException("user not found"));
-         String token=jwtService.generateToken(user);
-         return ResponseUser.builder().token(token).build();
+        String token=jwtService.generateToken(user);
+        return ResponseUser.builder().token(token).build();
+
     }
 }

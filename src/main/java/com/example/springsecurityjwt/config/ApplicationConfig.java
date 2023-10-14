@@ -23,38 +23,29 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 
 
 public class ApplicationConfig {
+    private final UserRepostory userRepository;
 
-     private  final UserRepostory userRepostory;
+    @Bean
+    public UserDetailsService userDetailsService() {
+        return username -> userRepository.findByUsername(username)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+    }
 
-     @Bean
-     public UserDetailsService userDetailsService(){
+    @Bean
+    public AuthenticationProvider authenticationProvider() {
+        DaoAuthenticationProvider authenticationProvider = new DaoAuthenticationProvider();
+        authenticationProvider.setUserDetailsService(userDetailsService());
+        authenticationProvider.setPasswordEncoder(passwordEncoder());
+        return authenticationProvider;
+    }
 
-         return (username)->{return userRepostory.findByUsername(username)
-                 .orElseThrow(()->new UsernameNotFoundException("User not found"));};
-     }
-
-     @Bean
-     public PasswordEncoder passwordEncoder(){
+    @Bean
+    public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
-     }
+    }
 
-
-     @Bean
-    public AuthenticationProvider authenticationProvider(){
-
-       // dogrulamani yoxluyur
-         DaoAuthenticationProvider authenticationProvider=new DaoAuthenticationProvider();
-         authenticationProvider.setPasswordEncoder(passwordEncoder());
-         authenticationProvider.setUserDetailsService(userDetailsService());
-
-         return authenticationProvider;
-     }
-
-      @Bean
-      public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration) throws Exception{
-
-
-         return authenticationConfiguration.getAuthenticationManager();
-      }
-
+    @Bean
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration) throws Exception {
+        return authenticationConfiguration.getAuthenticationManager();
+    }
 }

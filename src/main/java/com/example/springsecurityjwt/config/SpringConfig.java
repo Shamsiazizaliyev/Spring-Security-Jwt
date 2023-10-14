@@ -23,27 +23,28 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 
 public class SpringConfig {
 
-
   private final AuthenticationProvider authenticationProvider;
+  private final JwtAuthenticationFilter jwtAuthenticationFilter;
 
-  private  final  JwtAuthenticationFilter jwtAuthenticationFilter;
-    @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+  @Bean
+  public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {
+    httpSecurity
+            .csrf()
+            .disable()
+            .authorizeHttpRequests()
+            .requestMatchers("/login/**")
+            .permitAll()
+            .anyRequest()
+            .authenticated()
+            .and()
+            .sessionManagement()
+            .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+            .and()
+            .authenticationProvider(authenticationProvider)
+            .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
-       return http.csrf().disable()
-                .authorizeHttpRequests()
-                .requestMatchers("/login/**").permitAll()
-                .anyRequest().authenticated()
-                .and().sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-                .and()
-                .authenticationProvider(authenticationProvider)
-                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
-                .build();
-
-
-
-
-    }
+    return httpSecurity.build();
+  }
 
 
 }

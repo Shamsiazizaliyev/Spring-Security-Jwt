@@ -9,7 +9,8 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/dashboard")
 public class DashboardController {
 
-    @GetMapping("/board")
+
+@GetMapping("/board")
     public String  helloWorld(){
         return "welcome dashboard";
     }
